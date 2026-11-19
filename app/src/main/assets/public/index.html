@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0A0A0F">
+<meta name="description" content="Jarvis — assistant personnel IA, compagnon néon steampunk, mode Live.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Jarvis</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+  <header class="topbar">
+    <div class="brand"><span class="led-dot"></span>JARVIS<span class="gear">⚙︎</span></div>
+    <div class="hdr-actions">
+      <button id="btnLevel" class="lvl-chip" aria-label="Mon compagnon"><span class="lvl-n">1</span><span class="lvl-t">Nouveau-né</span></button>
+      <span id="xpBump" class="xp-bump"></span>
+      <button id="btnLive" class="icon-btn" aria-label="Mode Live" title="Mode Live">🎙️</button>
+      <button id="btnSettings" class="icon-btn" aria-label="Réglages" title="Réglages">⚙️</button>
+    </div>
+  </header>
+
+  <main id="chat" class="chat" aria-live="polite"></main>
+
+  <div id="liveBar" class="live-bar hidden">
+    <span class="live-dot"></span>
+    <span id="liveText">Écoute…</span>
+    <button id="liveStop" class="live-stop">Arrêter</button>
+  </div>
+
+  <form id="composer" class="composer" autocomplete="off">
+    <textarea id="input" rows="1" placeholder="Parle à Jarvis…" enterkeyhint="send"></textarea>
+    <button id="send" type="submit" class="send-btn" aria-label="Envoyer">➤</button>
+  </form>
+</div>
+
+<!-- ===== Compagnon ===== -->
+<div id="bubble" class="bubble" data-emotion="idle" role="button" tabindex="0" aria-label="Compagnon Jarvis">
+  <svg viewBox="0 0 120 120" class="robot" aria-hidden="true">
+    <defs>
+      <radialGradient id="gHalo"><stop offset="0" stop-color="#00e5ff" stop-opacity=".45"/><stop offset="1" stop-color="#00e5ff" stop-opacity="0"/></radialGradient>
+      <linearGradient id="gBrass" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#e8cf8a"/><stop offset=".45" stop-color="#b87333"/><stop offset="1" stop-color="#7a4a24"/>
+      </linearGradient>
+      <linearGradient id="gScreen" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#0d1b22"/><stop offset="1" stop-color="#060a0d"/>
+      </linearGradient>
+    </defs>
+
+    <circle class="halo" cx="60" cy="62" r="58" fill="url(#gHalo)"/>
+    <g class="head">
+      <rect x="20" y="32" width="80" height="62" rx="19" fill="url(#gBrass)" stroke="#f3e0a5" stroke-width="1.4"/>
+      <rect x="28" y="42" width="64" height="38" rx="13" fill="url(#gScreen)" stroke="#00e5ff" stroke-opacity=".55"/>
+      <g class="eyes">
+        <circle class="eye" cx="45" cy="60" r="7" fill="#00e5ff"/>
+        <circle class="eye" cx="75" cy="60" r="7" fill="#00e5ff"/>
+        <circle class="eye-core" cx="45" cy="60" r="2.6" fill="#eafcff"/>
+        <circle class="eye-core" cx="75" cy="60" r="2.6" fill="#eafcff"/>
+      </g>
+      <g class="mouths">
+        <path class="mouth m-flat" d="M52 74 h16" stroke="#00e5ff" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+        <path class="mouth m-happy" d="M50 72 q10 8 20 0" stroke="#00e5ff" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+        <path class="mouth m-sad" d="M50 77 q10 -7 20 0" stroke="#00e5ff" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+        <ellipse class="mouth m-o" cx="60" cy="75" rx="4.5" ry="5.5" fill="#00e5ff"/>
+      </g>
+      <line x1="60" y1="32" x2="60" y2="19" stroke="#d4af37" stroke-width="3" stroke-linecap="round"/>
+      <circle class="antenna" cx="60" cy="16" r="5" fill="#ff6b35"/>
+      <circle class="bolt" cx="28" cy="30" r="3.4" fill="#39ff14"/>
+      <circle class="bolt" cx="92" cy="30" r="3.4" fill="#39ff14"/>
+      <rect x="34" y="86" width="52" height="7" rx="3.5" fill="#2a1b10" stroke="#d4af37" stroke-opacity=".7"/>
+      <circle class="vent v1" cx="44" cy="89.5" r="2.1" fill="#ff6b35"/>
+      <circle class="vent v2" cx="56" cy="89.5" r="2.1" fill="#ff6b35"/>
+      <circle class="vent v3" cx="68" cy="89.5" r="2.1" fill="#ff6b35"/>
+    </g>
+    <g class="gear-g">
+      <circle cx="16" cy="86" r="9" fill="none" stroke="#d4af37" stroke-width="2.2" stroke-dasharray="4 3"/>
+      <circle cx="103" cy="70" r="7" fill="none" stroke="#b87333" stroke-width="2" stroke-dasharray="3 3"/>
+    </g>
+  </svg>
+  <span class="bubble-badge" id="bubbleBadge"></span>
+</div>
+
+<!-- ===== Réglages ===== -->
+<div id="settings" class="sheet hidden" role="dialog" aria-modal="true" aria-label="Réglages">
+  <div class="sheet-head">
+    <h2>Réglages</h2>
+    <button id="closeSettings" class="icon-btn" aria-label="Fermer">✕</button>
+  </div>
+  <div class="sheet-body">
+    <p class="hint">Jarvis a besoin d'un cerveau. Choisis un fournisseur, colle ta clé, c'est tout. La clé reste sur ton téléphone.</p>
+
+    <div class="presets">
+      <button class="preset" data-p="openai">OpenAI</button>
+      <button class="preset" data-p="gemini">Gemini <small>gratuit</small></button>
+      <button class="preset" data-p="openrouter">OpenRouter</button>
+      <button class="preset" data-p="ollama">Ollama <small>local</small></button>
+    </div>
+
+    <label>Adresse du serveur
+      <input id="cfgBase" type="url" placeholder="https://api.openai.com/v1" spellcheck="false">
+    </label>
+    <label>Clé API
+      <input id="cfgKey" type="password" placeholder="sk-…" spellcheck="false">
+    </label>
+    <label>Modèle
+      <input id="cfgModel" type="text" placeholder="gpt-4o-mini" spellcheck="false">
+    </label>
+
+    <label>Ton compagnon
+      <button id="openCompagnon" type="button" class="ghost wide">Voir mon compagnon et sa progression</button>
+    </label>
+
+    <label>Ce qu'il fait tout seul
+      <button id="openMissions" type="button" class="ghost wide">Missions et briefing du matin</button>
+    </label>
+
+    <label class="row"><span>Voix en Mode Live</span><input id="cfgVoice" type="checkbox" checked></label>
+
+    <div class="divider"></div>
+    <h3>Mémoire</h3>
+    <p class="hint">Ce que Jarvis doit retenir de toi, en permanence.</p>
+    <textarea id="cfgFacts" rows="4" placeholder="Ex : Rico est soudeur, il vise un CDI à Castellón."></textarea>
+
+    <div class="divider"></div>
+    <div class="sheet-actions">
+      <button id="btnInstall" class="ghost hidden">Installer l'app</button>
+      <button id="btnBubble" class="ghost hidden">Activer la bulle système</button>
+      <button id="btnExport" class="ghost">Exporter la conversation</button>
+      <button id="btnWipe" class="danger">Effacer toutes les données</button>
+    </div>
+    <p class="version">Jarvis v0.1 · PWA · données locales chiffrées par le navigateur</p>
+  </div>
+</div>
+
+<!-- ===== Compagnon : progression ===== -->
+<div id="compagnon" class="sheet hidden" role="dialog" aria-modal="true" aria-label="Mon compagnon">
+  <div class="sheet-head">
+    <h2>Mon compagnon</h2>
+    <button id="closeCompagnon" class="icon-btn" aria-label="Fermer">✕</button>
+  </div>
+  <div class="sheet-body">
+    <div class="cg-top">
+      <div class="cg-id">
+        <div class="cg-name-row"><span id="cgName">Jarvis</span><span id="cgStreak" class="cg-streak">🔥 premier jour</span></div>
+        <div id="cgLevel" class="cg-level">Niveau 1 · Nouveau-né</div>
+      </div>
+    </div>
+    <div class="xp-wrap">
+      <div class="xp-track"><div id="cgXpBar" class="xp-fill"></div></div>
+      <div id="cgXpText" class="xp-text">0 XP</div>
+    </div>
+
+    <div class="divider"></div>
+    <h3>Son apparence</h3>
+    <div class="sp-grid">
+      <button class="sp" data-sp="robot"><span class="sp-dot" style="background:#b87333"></span>Robot<span class="lock"></span></button>
+      <button class="sp" data-sp="korrigan"><span class="sp-dot" style="background:#39ff14"></span>Korrigan<span class="lock"></span></button>
+      <button class="sp" data-sp="alien"><span class="sp-dot" style="background:#8a2be2"></span>Alien<span class="lock"></span></button>
+      <button class="sp" data-sp="chat"><span class="sp-dot" style="background:#ffa94d"></span>Chat<span class="lock"></span></button>
+    </div>
+    <div class="sw-grid">
+      <button class="sw" data-c="#B87333" style="background:#B87333"></button>
+      <button class="sw" data-c="#00E5FF" style="background:#00E5FF"></button>
+      <button class="sw" data-c="#39FF14" style="background:#39FF14"></button>
+      <button class="sw" data-c="#FF1493" style="background:#FF1493"></button>
+      <button class="sw" data-c="#D4AF37" style="background:#D4AF37"></button>
+      <button class="sw" data-c="#8A2BE2" style="background:#8A2BE2"></button>
+      <button class="sw" data-c="#FF6B35" style="background:#FF6B35"></button>
+      <button class="sw" data-c="#20B2AA" style="background:#20B2AA"></button>
+      <button class="sw" data-c="#C0C0C0" style="background:#C0C0C0"></button>
+      <button class="sw" data-c="#DC143C" style="background:#DC143C"></button>
+    </div>
+    <p class="hint">Les couleurs se débloquent au niveau 4.</p>
+
+    <label>Son nom
+      <input id="cgNameInput" type="text" maxlength="18" placeholder="Jarvis" spellcheck="false">
+    </label>
+
+    <div class="divider"></div>
+    <h3>Ce qui l'attend</h3>
+    <ul id="cgUnlocks" class="unlocks"></ul>
+    <p class="hint">Tu gagnes de l'XP en parlant (+5), à la voix (+10), en validant une action (+15), aux missions (+25), et chaque jour où tu reviens (+20).</p>
+  </div>
+</div>
+
+<div id="lvlFlash" class="lvl-flash"></div>
+
+<!-- ===== Missions ===== -->
+<div id="missions" class="sheet hidden" role="dialog" aria-modal="true" aria-label="Missions">
+  <div class="sheet-head">
+    <h2>Missions</h2>
+    <button id="closeMissions" class="icon-btn" aria-label="Fermer">✕</button>
+  </div>
+  <div class="sheet-body">
+    <p class="hint">Une mission, c'est une phrase que Jarvis exécute tout seul au moment que tu choisis. Il te montre le résultat ici, et demande ton OUI si l'action est irréversible.</p>
+
+    <form id="msForm">
+      <label>Ce que Jarvis doit faire
+        <textarea id="msText" rows="2" placeholder="Ex : résume mes ventes GPA X de la veille"></textarea>
+      </label>
+      <div id="msFreq" class="chips">
+        <button type="button" class="chip active" data-f="day">chaque jour</button>
+        <button type="button" class="chip" data-f="week">chaque semaine</button>
+        <button type="button" class="chip" data-f="once">une fois</button>
+      </div>
+      <label>À quelle heure
+        <input id="msHour" type="time" value="08:00">
+      </label>
+      <button type="submit" class="primary wide">Ajouter la mission</button>
+    </form>
+
+    <div class="divider"></div>
+    <h3>En place</h3>
+    <ul id="msList" class="ms-list"></ul>
+    <p class="hint">Les missions tournent quand l'app est ouverte. Ferme-la et elles attendent ton retour — elles ne ratent rien.</p>
+  </div>
+</div>
+
+
+<!-- ===== Validation OUI/NON ===== -->
+<div id="confirm" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="modal-card">
+    <div class="modal-icon">⚡</div>
+    <h3 id="confirmTitle">Action demandée</h3>
+    <p id="confirmText"></p>
+    <pre id="confirmDetail" class="confirm-detail hidden"></pre>
+    <div class="modal-actions">
+      <button id="confirmNo" class="ghost big">NON</button>
+      <button id="confirmYes" class="primary big">OUI</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="progression.js"></script>
+<script src="missions.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

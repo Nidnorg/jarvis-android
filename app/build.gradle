@@ -1,0 +1,29 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'ai.particle.jarvis'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "ai.particle.jarvis"
+        minSdk 24
+        targetSdk 34
+        versionCode 3
+        versionName "0.3"
+    }
+
+    buildTypes {
+        release { minifyEnabled false }
+        debug { }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.webkit:webkit:1.11.0'
+}
